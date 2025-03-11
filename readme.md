@@ -11,8 +11,8 @@ This Python script allows you to download and visualize raster image data from t
 ### Usage
 The package contains two main scripts:
 
-gaez_image_downloader.py - Uses ESRI REST API to download raster data. The projection method of the image is in EPSG:3857, so it will need to be converted for use in other coordinate reference systems.
-gaez_wcs_downloader.py - Uses WCS protocol to download raster data. This is more useful for editing directly in QGIS.
+1. gaez_image_downloader.py - Uses ESRI REST API to download raster data. The projection method of the image is in EPSG:3857, so it will need to be converted for use in other coordinate reference systems.
+2. gaez_wcs_downloader.py - Uses WCS protocol to download raster data. This is more useful for editing directly in QGIS.
 
 Both scripts share common components through gaez_shared.py.
 
