@@ -34,7 +34,7 @@ rendering_rule = {
 }
 
 #example size, this is the max size
-size = "15000,41100"
+size = "15000,4100"
 
 params = {
     "f": "image",
