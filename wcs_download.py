@@ -17,7 +17,12 @@ default_theme_service = "res05"
 #example mosaic ruleset
 mosaic_rule = {
     "mosaicMethod": "esriMosaicNorthwest",
-    "where": "(((UPPER(sub_theme_name) = 'AGRO-ECOLOGICAL ATTAINABLE YIELD ') AND (UPPER(variable) = 'AVERAGE ATTAINABLE YIELD OF BEST OCCURRING SUITABILITY CLASS IN GRID CELL') AND (UPPER(crop) = 'WHEAT') AND (UPPER(water_supply) = 'RAINFED')))",
+    "where": """
+    (((UPPER(sub_theme_name) = 'AGRO-ECOLOGICAL ATTAINABLE YIELD ') 
+    AND 
+        (UPPER(variable) = 'AVERAGE ATTAINABLE YIELD OF BEST OCCURRING SUITABILITY CLASS IN GRID CELL') 
+    AND 
+        (UPPER(crop) = 'WHEAT') AND (UPPER(water_supply) = 'RAINFED')))""",
     "sortField": "",
     "ascending": True,
     "mosaicOperation": "MT_FIRST"
@@ -36,11 +41,12 @@ min_lon, min_lat, max_lon, max_lat = -179.99999999999997, -89.9999928, 179.99998
 
 params = {
     "SERVICE": "WCS",
-    "VERSION": "2.0.1",
+    "VERSION": "1.0.0",
     "REQUEST": "GetCoverage",
-    "COVERAGEID": COVERAGE_ID,
-    "FORMAT": "image/tiff",
-    "SUBSET": [f"x({min_lon},{max_lon})", f"y({min_lat},{max_lat})"],
+    "COVERAGE": COVERAGE_ID,
+    "FORMAT": "GeoTIFF",
+    "BBOX": f"{min_lon},{min_lat},{max_lon},{max_lat}",
+    "CRS": "EPSG:4326",
     "RESOLUTION": "0.08333333", 
     "mosaicRule": json.dumps(mosaic_rule),
     "renderingRule": json.dumps(rendering_rule), 
