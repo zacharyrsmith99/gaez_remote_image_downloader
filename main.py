@@ -29,9 +29,9 @@ default_theme_service = "res05"
 
 whole_world_bbox = "-180,-90,180,90"
 
-max_size = "15000,4100"
+max_size = "15000,4100" # may distort the image
 
-output_path = ""
+output_path = "gaez_wheat_yield.tif"
 if not output_path:
     raise Exception('Need to input an output path!')
 
@@ -56,16 +56,47 @@ class GaezeImageClient:
         self.base_url = "https://gaez-services.fao.org/server/rest/services/" + default_theme_service + "/ImageServer"
 
     def construct_export_image_params(self, params):
-        params = {
-            "f": "json",
-            "bandIds": "",
-            "renderingRule": json.dumps(params["renderingRule"]),
-            "mosaicRule": json.dumps(params["mosaicRule"]),
-            "bbox": params["bbox"],
-            "size": params["size"],
-            "format": "tiff",
-        }
-        return params
+        """
+        Constructs the parameters for the export image request.
+
+        Args:
+            params (dict): The parameters for the export image request.
+            params["format"] (str): The format of the image to export. Can be: jpgpng | png | png8 | png24 | jpg | bmp | gif | tiff | png32 | bip | bsq | lerc 
+            params["bbox"] (str): The bounding box of the image to export.
+            params["size"] (str): The size of the image to export.
+            params["renderingRule"] (dict): The rendering rule for the image to export.
+            params["mosaicRule"] (dict): The mosaic rule for the image to export.
+            params["bandIds"] (str): The band IDs to export.
+            params["renderingRule"] (dict): The rendering rule for the image to export.
+            params["mosaicRule"] (dict): The mosaic rule for the image to export.
+            params["f"] (str): The format of the image to export. Can be: json | image | kmz | html
+        Returns:
+            dict: The parameters for the export image request.
+        """
+        export_params = {}
+        if 'renderingRule' in params:
+            export_params["renderingRule"] = json.dumps(params["renderingRule"])
+        if 'mosaicRule' in params:
+            export_params["mosaicRule"] = json.dumps(params["mosaicRule"])
+        if 'bandIds' in params:
+            export_params["bandIds"] = params["bandIds"]
+        if 'imageSR' in params:
+            export_params["imageSR"] = params["imageSR"]
+        if 'bboxSR' in params:
+            export_params["bboxSR"] = params["bboxSR"]
+        if 'format' in params:
+            export_params["format"] = params["format"]
+        if 'f' in params:
+            export_params["f"] = params["f"]
+        if 'bbox' in params:
+            export_params["bbox"] = params["bbox"]
+        if 'size' in params:
+            export_params["size"] = params["size"]
+        if 'imageSR' in params:
+            export_params["imageSR"] = params["imageSR"]
+        if 'bboxSR' in params:
+            export_params["bboxSR"] = params["bboxSR"]
+        return export_params
 
     def export_image(self, params):
         encoded_params = urllib.parse.urlencode(params)
@@ -86,24 +117,48 @@ def download_gaez_image():
     mosaic_rule = example_mosaic_rule # set to your mosaic rule
     rendering_rule = example_rendering_rule # set to your rendering rule
     bbox = whole_world_bbox # set to your bbox
-    size = max_size # set to your size
+    size = "4000, 2000" # set to your size
+    format = "tiff" # set to your format
+    f = "image" # set to your format
+    imageSR = 4326 # set to your image spatial reference
+    bboxSR = 4326 # set to your bbox spatial reference
+    bandIds = "" # set to your bandIds
 
     params = gaez_image_client.construct_export_image_params(
         {
             "mosaicRule": mosaic_rule, 
             "renderingRule": rendering_rule, 
             "bbox": bbox, 
-            "size": size
+            "size": size,
+            "format": format,
+            "f": f,
+            "bandIds": bandIds,
+            "imageSR": imageSR,
+            "bboxSR": bboxSR,
         }
     )
 
     response = gaez_image_client.export_image(params)
     
-    if response and response.status_code == 200:
+    """
+    The image is exported as a TIFF file by default, however the format can be changed to PNG, JPG, etc.
+    The "f" is also a formatter for the response - it determines how the server will send the image.
+    If you select "image" it will stream the image to the client, however the image will not include metadata.
+    If you want metadata, you need to select either json or html. 
+    When you select json, the server will return a JSON object with the image metadata, including an href to the image. I have
+    included a way to download the image using the href below.
+    """
+    if f == "image":
+        try:
+            with open(output_path, "wb") as f:
+                f.write(response.content)
+        except Exception as e:
+            print(f"Error writing image to file: {e}")
+        print(f"Image {output_path} saved successfully!")
+        return
+    if f == "json":
         try:
             json_data = response.json()
-            print(json_data)
-            print("JSON response:", json_data)
             
             if 'href' in json_data:
                 image_url = json_data['href']
@@ -113,7 +168,7 @@ def download_gaez_image():
                 if image_response.status_code == 200:
                     with open(output_path, "wb") as f:
                         f.write(image_response.content)
-                    print("Image saved successfully")
+                    print(f"Image {output_path} saved successfully!")
                 else:
                     print(f"Failed to download image from URL: {image_response.status_code}")
             else:
@@ -122,5 +177,7 @@ def download_gaez_image():
             print(f"Error parsing JSON response: {e}")
     else:
         print("Failed to get response from server")
+    if f == "html":
+        print(response.content)
 
 download_gaez_image()
