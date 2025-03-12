@@ -83,7 +83,7 @@ def download_gaez_image():
         "size": size,
     }
 
-    response = gaez_image_server.send_image_download_request()
+    response = gaez_image_server.send_image_download_request(params)
 
     with open(output_path, 'wb') as f:
         f.write(response.content)
