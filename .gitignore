@@ -1,0 +1,12 @@
+.env
+/work_env
+/venv
+/env
+*.wsdl
+*.aux.xml
+*.xml
+*.tif
+*.tiff
+*.png
+*.jpg
+*.jpeg
