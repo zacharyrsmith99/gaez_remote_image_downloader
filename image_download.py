@@ -1,7 +1,6 @@
 import requests
 import urllib.parse
 from qgis.core import QgsRasterLayer, QgsProject
-from urllib.error import HTTPError
 import json
 
 # Themes To Services
@@ -16,10 +15,10 @@ themes_to_services = {
 
 default_theme_service = "res05"
 
-#example: full coordinates of pseudo mercator projection
+# Full coordinates of pseudo mercator projection
 whole_world_bbox = "-20037508.3427892,-20037508.3427892,20037508.3427892,20037508.3427892"
 
-#example: mosaic ruleset
+#example mosaic ruleset
 mosaic_rule = {
     "mosaicMethod": "esriMosaicNorthwest",
     "where": "(((UPPER(sub_theme_name) = 'AGRO-ECOLOGICAL ATTAINABLE YIELD ') AND (UPPER(variable) = 'AVERAGE ATTAINABLE YIELD OF BEST OCCURRING SUITABILITY CLASS IN GRID CELL') AND (UPPER(crop) = 'WHEAT') AND (UPPER(water_supply) = 'RAINFED')))",
@@ -28,37 +27,23 @@ mosaic_rule = {
     "mosaicOperation": "MT_FIRST"
 }
 
-#example: rendering rule
+#example rendering rule
 rendering_rule = {
     "rasterFunction": "Suitability and Attainable Yield Symbology",
 }
 
 #example size, this is the max size
 size = "15000,4100"
-
-params = {
-    "f": "image",
-    "bandIds": "",
-    "renderingRule": json.dumps(rendering_rule),
-    "mosaicRule": json.dumps(mosaic_rule),
-    "bbox": whole_world_bbox,
-    "imageSR": "102100",
-    "bboxSR": "102100",
-    "size": size,
-}
-
 output_path = r""
 
 if not output_path:
     raise Exception('Need to input an output path!')
     
-
-
 class GaezImageServer:
     def __init__(self):
         self.base_url = "https://gaez-services.fao.org/server/rest/services/" + default_theme_service + "/ImageServer/exportImage"
     
-    def send_image_download_request(self):
+    def send_image_download_request(self, params):
         encoded_params = urllib.parse.urlencode(params)
         full_url = f"{self.base_url}?{encoded_params}"
         response = requests.get(full_url)
@@ -67,8 +52,9 @@ class GaezImageServer:
             print('Received valid response from GAEZ image server...')
             return response
         
-        raise HTTPError(code=response.status_code, message=f"Failed to send your request to web image server")
-            
+        raise Exception(f"Failed to send your request to WCS server. Received code: ({response.status_code}), {response.content}")            
+
+gaez_image_server = GaezImageServer()
 
 def handle_error(response):
     body = response.json()
@@ -86,7 +72,16 @@ def handle_error(response):
         raise Exception(f"Error code {code} encountered in processing your request." + message + details)
 
 def download_gaez_image():
-    gaez_image_server = GaezImageServer()
+    params = {
+        "f": "image",
+        "bandIds": "",
+        "renderingRule": json.dumps(rendering_rule),
+        "mosaicRule": json.dumps(mosaic_rule),
+        "bbox": whole_world_bbox,
+        "imageSR": "102100",
+        "bboxSR": "102100",
+        "size": size,
+    }
 
     response = gaez_image_server.send_image_download_request()
 
