@@ -113,4 +113,4 @@ def download_image():
             print(f"Failed to add WCS layer. Response content type: {response.headers.get('Content-Type')}")
             print(f"First 100 bytes: {response.content[:100]}")
 
-download_gaez_wcs()
+download_image()
