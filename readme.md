@@ -14,7 +14,7 @@ The package contains two main scripts:
 
 ## Troubleshooting
 
-**Invalid Format Error in QGIS**: Ensure that the output_path file format is compatible with QGIS (e.g., .tif or .jpg). If there are issues with format compatibility, try converting the downloaded image using QGIS's processing tools or external utilities like GDAL.
+**Invalid Format Error in QGIS**: Ensure that the output_path file format is compatible with QGIS (e.g., .tif or .jpg). If there are issues with format compatibility, try converting the downloaded image using QGIS's processing tools or external utilities like GDAL. If you can't get it to work, it's likely that your parameters are incorrect and the contents written to the output_path are not a valid image.
 
 **Parameter Errors**: If the server responds with a 400 error, check the parameters for mistakes or inconsistencies in the query string. The handle_error() function provides error messages for debugging.
 
